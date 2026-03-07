@@ -1,12 +1,16 @@
 <!doctype html>
-<html lang="en">
+<html lang="ja">
 	<head>
 		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<link rel="icon" href="/favicon.ico" />
 		<meta name="generator" content={Astro.generator} />
-		<title>Astro Basics</title>
+		<title>Bristlecone | 住宅・リフォーム・ガーデンデザイン</title>
+		<meta
+			name="description"
+			content="Bristlecone（ブリッスルコーン）は、住宅・リフォーム・ガーデンデザインを一貫して手掛ける個人アトリエです。"
+		/>
 	</head>
 	<body>
 		<slot />
@@ -19,5 +23,24 @@
 		margin: 0;
 		width: 100%;
 		height: 100%;
+		font-family: 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'Hiragino Sans GB', 'Yu Gothic Medium',
+			'Yu Gothic', Meiryo, 'Helvetica Neue', Arial, sans-serif;
+		color: #1f2933;
+		-webkit-font-smoothing: antialiased;
+		-moz-osx-font-smoothing: grayscale;
+	}
+
+	body {
+		background-color: #f5f7fa;
+		font-weight: 500;
+	}
+
+	h1, h2, h3, h4, h5, h6 {
+		font-style: normal;
+		font-weight: 600;
+	}
+
+	p {
+		line-height: 1.9;
 	}
 </style>

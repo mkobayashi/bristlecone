@@ -1,11 +1,479 @@
 ---
-import Welcome from '../components/Welcome.astro';
 import Layout from '../layouts/Layout.astro';
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+const year = new Date().getFullYear();
 ---
 
 <Layout>
-	<Welcome />
+	<header class="site-header">
+		<nav class="site-nav" aria-label="メインメニュー">
+			<button
+				class="nav-toggle"
+				type="button"
+				aria-expanded="false"
+				aria-controls="nav-list"
+				aria-label="メニューを開く"
+			>
+				<span class="nav-toggle-bar"></span>
+				<span class="nav-toggle-bar"></span>
+				<span class="nav-toggle-bar"></span>
+			</button>
+			<ul class="nav-list" id="nav-list">
+				<li><a href="#scope">提供項目</a></li>
+				<li><a href="/contact">お問い合わせ</a></li>
+			</ul>
+		</nav>
+	</header>
+	<script>
+		const toggle = document.querySelector('.nav-toggle');
+		const list = document.getElementById('nav-list');
+		if (toggle && list) {
+			toggle.addEventListener('click', () => {
+				const open = toggle.getAttribute('aria-expanded') === 'true';
+				toggle.setAttribute('aria-expanded', String(!open));
+				toggle.setAttribute('aria-label', open ? 'メニューを開く' : 'メニューを閉じる');
+				document.querySelector('.site-nav')?.classList.toggle('is-open', !open);
+			});
+			document.querySelectorAll('.nav-list a').forEach((a) => {
+				a.addEventListener('click', () => {
+					toggle.setAttribute('aria-expanded', 'false');
+					toggle.setAttribute('aria-label', 'メニューを開く');
+					document.querySelector('.site-nav')?.classList.remove('is-open');
+				});
+			});
+		}
+	</script>
+	<main>
+		<section
+			class="hero"
+			style={`background-image: linear-gradient(120deg, rgba(15, 23, 42, 0.75), rgba(15, 23, 42, 0.25)), url(/bristlecone.jpg);`}
+		>
+			<div class="hero-inner">
+				<div class="hero-label">Bristlecone</div>
+				<div class="hero-box">
+					<h1>樹齢5000年のブリストルコーン。<br>その言葉に耳を傾けながら。</h1>
+					<p class="hero-lead"></p>
+				</div>
+			</div>
+		</section>
+
+		<section class="message">
+			<div class="section-inner">
+				<h2>光と緑と風を暮らしに</h2>
+				<p>
+					ブリストルコーンは、自然素材、自然エネルギー、人と環境に優しい建築、空間づくりを志向するプロジェクトです。
+				</p>
+			</div>
+		</section>
+
+		<section class="services" id="scope">
+			<div class="section-inner">
+				<h2>提供項目</h2>
+				<div class="service-grid">
+					<article class="service-card">
+						<h3>リフォーム・リノベ</h3>
+						<p>
+							小さなリフォーム、補修から大幅な刷新まで柔軟に対応します。
+						</p>
+					</article>
+					<article class="service-card">
+						<h3>植栽・坪庭</h3>
+						<p>
+							暮らしに四季のリズムと癒しをもたらすコンパクトな坪庭をご提案します。
+						</p>
+					</article>
+					<article class="service-card">
+						<h3>自然エネルギー活用</h3>
+						<p>
+							太陽光発電、温水利用など自然エネルギーのある暮らしづくりをお手伝いします。
+						</p>
+					</article>
+				</div>
+			</div>
+		</section>
+
+		<section class="oldhouse-section">
+			<div class="oldhouse-inner">
+				<div class="oldhouse-box">
+					<p class="oldhouse-text">
+						秩父の古民家再生プロジェクトに参加しています。</p>
+				</div>
+			</div>
+		</section>
+
+		<footer class="footer">
+			<div class="footer-inner">
+				<div class="footer-left">
+					<div class="footer-brand">Bristlecone</div>
+					<p class="footer-text">リフォーム・坪庭・太陽光発電</p>
+					<p class="footer-copy">© {year} Bristlecone. All rights reserved.</p>
+				</div>
+				<a class="footer-contact" href="/contact">CONTACT</a>
+			</div>
+		</footer>
+	</main>
 </Layout>
+
+<style>
+	main {
+		min-height: 100vh;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.hero {
+		position: relative;
+		min-height: 70vh;
+		background-size: cover;
+		background-position: center;
+		color: #f9fafb;
+		display: flex;
+		align-items: flex-start;
+		justify-content: flex-start;
+	}
+
+	.hero::after {
+		content: '';
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		height: 4px;
+		background: linear-gradient(
+			90deg,
+			transparent 0%,
+			rgba(212, 175, 85, 0.6) 15%,
+			#d4af59 50%,
+			rgba(212, 175, 85, 0.6) 85%,
+			transparent 100%
+		);
+	}
+
+	.hero-inner {
+		max-width: 640px;
+		min-width: 640px;
+		margin: 0;
+		padding: 4rem 1.5rem 4rem 2.5rem;
+		flex-shrink: 0;
+	}
+
+	.hero-label {
+		display: inline-block;
+		padding: 0.25rem 0.75rem;
+		border-radius: 999px;
+		background-color: rgba(15, 23, 42, 0.6);
+		font-size: 1.75rem;
+		letter-spacing: 0.22em;
+		text-transform: uppercase;
+		margin-bottom: 0.75rem;
+	}
+
+	.hero-box {
+		max-width: 640px;
+		padding: 1.75rem 2rem 1.9rem;
+		border-radius: 1rem;
+		background: rgba(15, 23, 42, 0.6);
+		backdrop-filter: blur(8px);
+		box-shadow: 0 24px 60px rgba(15, 23, 42, 0.6);
+	}
+
+	.hero h1 {
+		font-size: clamp(1.9rem, 3vw, 2.4rem);
+		line-height: 1.4;
+		margin: 0 0 0.75rem;
+		word-break: keep-all;
+		overflow-wrap: normal;
+	}
+
+	.hero-lead {
+		margin: 0;
+		font-size: 0.98rem;
+		line-height: 1.9;
+		color: #e5e7eb;
+	}
+
+	.section-inner {
+		max-width: 960px;
+		margin: 0 auto;
+		padding: 3.5rem 1.5rem 3.25rem;
+	}
+
+	.message {
+		background-color: #ffffff;
+	}
+
+	.message h2 {
+		font-size: 1.4rem;
+		margin: 0 0 1.5rem;
+	}
+
+	.message p {
+		margin: 0;
+		max-width: 42rem;
+		font-size: 1.0625rem;
+		line-height: 1.9;
+		color: #374151;
+	}
+
+	.services {
+		background: #fffcf7;
+	}
+
+	.services h2 {
+		font-size: 1.3rem;
+		text-align: left;
+		margin: 0 0 1.75rem;
+	}
+
+	.service-grid {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 1.5rem;
+	}
+
+	.service-card {
+		background-color: #fdfbf7;
+		border-radius: 0.9rem;
+		padding: 1.5rem 1.4rem 1.6rem;
+		box-shadow: 0 12px 30px rgba(45, 38, 28, 0.06);
+		border: 1px solid rgba(180, 168, 148, 0.4);
+	}
+
+	.service-card h3 {
+		font-size: 1.05rem;
+		margin: 0 0 0.75rem;
+	}
+
+	.service-card p {
+		margin: 0;
+		font-size: 1rem;
+		line-height: 1.9;
+		color: #374151;
+	}
+
+	.site-header {
+		background-color: #ffffff;
+		border-bottom: 1px solid #eee;
+	}
+
+	.site-nav {
+		max-width: 960px;
+		margin: 0 auto;
+		padding: 0.5rem 1.5rem;
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+		gap: 1rem;
+		min-height: 2.5rem;
+	}
+
+	.nav-toggle {
+		display: none;
+		width: 2rem;
+		height: 2rem;
+		padding: 0;
+		border: none;
+		background: transparent;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		gap: 5px;
+		cursor: pointer;
+	}
+
+	.nav-toggle-bar {
+		display: block;
+		width: 18px;
+		height: 1.5px;
+		background: #000;
+	}
+
+	.nav-list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.125rem 2rem;
+	}
+
+	.nav-list a {
+		color: #000;
+		text-decoration: none;
+		font-weight: 600;
+		font-size: 0.8125rem;
+		padding: 0.25em 0;
+		display: inline-block;
+		transition: color 0.15s ease;
+	}
+
+	.nav-list a:hover {
+		color: #333;
+	}
+
+	.oldhouse-section {
+		position: relative;
+		min-height: 42vh;
+		background-image: url(/oldhouse.jpg);
+		background-size: cover;
+		background-position: center;
+		color: #f9fafb;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.oldhouse-inner {
+		width: 100%;
+		max-width: 960px;
+		margin: 0 auto;
+		padding: 3rem 1.5rem;
+	}
+
+	.oldhouse-box {
+		max-width: 42rem;
+		padding: 1.75rem 2rem;
+		border-radius: 1rem;
+		background: rgba(15, 23, 42, 0.55);
+		backdrop-filter: blur(8px);
+		box-shadow: 0 20px 50px rgba(15, 23, 42, 0.4);
+	}
+
+	.oldhouse-text {
+		margin: 0;
+		font-size: 1rem;
+		line-height: 1.9;
+		color: #e8eaef;
+	}
+
+	.footer {
+		margin-top: auto;
+		background-color: #1e2835;
+		color: #e8ebf0;
+	}
+
+	.footer-inner {
+		max-width: 960px;
+		margin: 0 auto;
+		padding: 2.25rem 1.5rem 2.5rem;
+		display: flex;
+		align-items: flex-end;
+		justify-content: space-between;
+		gap: 1.5rem;
+	}
+
+	.footer-left {
+		text-align: left;
+	}
+
+	.footer-brand {
+		font-size: 1.15rem;
+		font-weight: 600;
+		margin-bottom: 0.25rem;
+	}
+
+	.footer-text {
+		margin: 0 0 0.75rem;
+		font-size: 0.9rem;
+		color: #a8b4c4;
+	}
+
+	.footer-copy {
+		margin: 0;
+		font-size: 0.8rem;
+		color: #8895a8;
+	}
+
+	.footer-contact {
+		font-size: 0.6875rem;
+		letter-spacing: 0.12em;
+		color: #a8b4c4;
+		text-decoration: none;
+		flex-shrink: 0;
+		padding-bottom: 0.15rem;
+	}
+
+	.footer-contact:hover {
+		color: #e8ebf0;
+	}
+
+	@media (max-width: 768px) {
+		.site-nav {
+			justify-content: flex-end;
+			padding: 0.4rem 1.25rem;
+			min-height: 2.25rem;
+		}
+
+		.nav-toggle {
+			display: flex;
+		}
+
+		.nav-list {
+			display: none;
+			position: absolute;
+			top: 100%;
+			left: 0;
+			right: 0;
+			background: #fff;
+			border-bottom: 1px solid #eee;
+			flex-direction: column;
+			gap: 0;
+			padding: 0.5rem 1.25rem 0.75rem;
+		}
+
+		.site-nav.is-open .nav-list {
+			display: flex;
+		}
+
+		.nav-list li {
+			border-bottom: 1px solid #f0f0f0;
+		}
+
+		.nav-list li:last-child {
+			border-bottom: none;
+		}
+
+		.nav-list a {
+			padding: 0.5em 0;
+			font-size: 0.8125rem;
+		}
+
+		.site-header {
+			position: relative;
+		}
+
+		.hero {
+			min-height: 70vh;
+		}
+
+		.hero h1 {
+			font-size: 1.4rem;
+		}
+
+		.hero-inner {
+			min-width: 0;
+			max-width: none;
+			padding: 4rem 1.25rem 3.5rem 1.5rem;
+		}
+
+		.hero-box {
+			padding: 1.4rem 1.4rem 1.6rem;
+		}
+
+		.section-inner {
+			padding-inline: 1.25rem;
+		}
+
+		.oldhouse-inner {
+			padding: 2.5rem 1.25rem;
+		}
+
+		.oldhouse-box {
+			padding: 1.4rem 1.5rem;
+		}
+
+		.service-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>
