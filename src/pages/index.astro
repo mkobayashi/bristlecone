@@ -24,24 +24,28 @@ const year = new Date().getFullYear();
 			</ul>
 		</nav>
 	</header>
-	<script>
-		const toggle = document.querySelector('.nav-toggle');
-		const list = document.getElementById('nav-list');
-		if (toggle && list) {
-			toggle.addEventListener('click', () => {
-				const open = toggle.getAttribute('aria-expanded') === 'true';
-				toggle.setAttribute('aria-expanded', String(!open));
-				toggle.setAttribute('aria-label', open ? 'メニューを開く' : 'メニューを閉じる');
-				document.querySelector('.site-nav')?.classList.toggle('is-open', !open);
-			});
-			document.querySelectorAll('.nav-list a').forEach((a) => {
-				a.addEventListener('click', () => {
-					toggle.setAttribute('aria-expanded', 'false');
-					toggle.setAttribute('aria-label', 'メニューを開く');
-					document.querySelector('.site-nav')?.classList.remove('is-open');
+	<script is:inline>
+		document.addEventListener('DOMContentLoaded', function () {
+			var toggle = document.querySelector('.nav-toggle');
+			var list = document.getElementById('nav-list');
+			var nav = document.querySelector('.site-nav');
+			if (toggle && list && nav) {
+				toggle.addEventListener('click', function (e) {
+					e.preventDefault();
+					var open = toggle.getAttribute('aria-expanded') === 'true';
+					toggle.setAttribute('aria-expanded', open ? 'false' : 'true');
+					toggle.setAttribute('aria-label', open ? 'メニューを開く' : 'メニューを閉じる');
+					nav.classList.toggle('is-open', !open);
 				});
-			});
-		}
+				document.querySelectorAll('.nav-list a').forEach(function (a) {
+					a.addEventListener('click', function () {
+						toggle.setAttribute('aria-expanded', 'false');
+						toggle.setAttribute('aria-label', 'メニューを開く');
+						nav.classList.remove('is-open');
+					});
+				});
+			}
+		});
 	</script>
 	<main>
 		<section
@@ -271,6 +275,8 @@ const year = new Date().getFullYear();
 		display: none;
 		width: 2rem;
 		height: 2rem;
+		min-width: 44px;
+		min-height: 44px;
 		padding: 0;
 		border: none;
 		background: transparent;
@@ -279,6 +285,8 @@ const year = new Date().getFullYear();
 		align-items: center;
 		gap: 5px;
 		cursor: pointer;
+		position: relative;
+		z-index: 10;
 	}
 
 	.nav-toggle-bar {
@@ -419,10 +427,11 @@ const year = new Date().getFullYear();
 			flex-direction: column;
 			gap: 0;
 			padding: 0.5rem 1.25rem 0.75rem;
+			z-index: 5;
 		}
 
 		.site-nav.is-open .nav-list {
-			display: flex;
+			display: flex !important;
 		}
 
 		.nav-list li {
