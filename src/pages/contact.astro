@@ -1,0 +1,295 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const year = new Date().getFullYear();
+---
+
+<Layout>
+	<header class="site-header">
+		<nav class="site-nav" aria-label="メインメニュー">
+			<button
+				class="nav-toggle"
+				type="button"
+				aria-expanded="false"
+				aria-controls="nav-list"
+				aria-label="メニューを開く"
+			>
+				<span class="nav-toggle-bar"></span>
+				<span class="nav-toggle-bar"></span>
+				<span class="nav-toggle-bar"></span>
+			</button>
+			<ul class="nav-list" id="nav-list">
+				<li><a href="/">トップ</a></li>
+				<li><a href="/#scope">提供項目</a></li>
+				<li><a href="/contact">お問い合わせ</a></li>
+			</ul>
+		</nav>
+	</header>
+	<script is:inline>
+		document.addEventListener('DOMContentLoaded', function () {
+			var toggle = document.querySelector('.nav-toggle');
+			var nav = document.querySelector('.site-nav');
+			if (toggle && nav) {
+				toggle.addEventListener('click', function (e) {
+					e.preventDefault();
+					var open = toggle.getAttribute('aria-expanded') === 'true';
+					toggle.setAttribute('aria-expanded', open ? 'false' : 'true');
+					toggle.setAttribute('aria-label', open ? 'メニューを開く' : 'メニューを閉じる');
+					nav.classList.toggle('is-open', !open);
+				});
+				document.querySelectorAll('.nav-list a').forEach(function (a) {
+					a.addEventListener('click', function () {
+						toggle.setAttribute('aria-expanded', 'false');
+						toggle.setAttribute('aria-label', 'メニューを開く');
+						nav.classList.remove('is-open');
+					});
+				});
+			}
+		});
+	</script>
+	<main class="contact-main">
+		<section class="contact-section">
+			<div class="contact-inner">
+				<h1 class="contact-title">お問い合わせ</h1>
+				<p class="contact-lead">
+					リフォーム・坪庭・自然エネルギー活用など、ご相談はお気軽にどうぞ。
+				</p>
+				<p class="contact-mail">
+					<a href="mailto:info@bristlecone.jp">info@bristlecone.jp</a>
+				</p>
+				<p class="contact-back">
+					<a href="/">← トップへ戻る</a>
+				</p>
+			</div>
+		</section>
+		<footer class="footer">
+			<div class="footer-inner">
+				<div class="footer-left">
+					<div class="footer-brand">Bristlecone</div>
+					<p class="footer-text">リフォーム・坪庭・太陽光発電</p>
+					<p class="footer-copy">© {year} Bristlecone. All rights reserved.</p>
+				</div>
+				<a class="footer-contact" href="/contact">CONTACT</a>
+			</div>
+		</footer>
+	</main>
+</Layout>
+
+<style>
+	.contact-main {
+		min-height: 100vh;
+		display: flex;
+		flex-direction: column;
+		overflow-x: hidden;
+	}
+
+	.contact-section {
+		flex: 1;
+		background-color: #fff;
+	}
+
+	.contact-inner {
+		max-width: 42rem;
+		margin: 0 auto;
+		padding: 4rem 1.5rem 4rem;
+	}
+
+	.contact-title {
+		font-size: 1.5rem;
+		margin: 0 0 1rem;
+	}
+
+	.contact-lead {
+		margin: 0 0 1.5rem;
+		font-size: 1rem;
+		line-height: 1.9;
+		color: #374151;
+	}
+
+	.contact-mail {
+		margin: 0 0 2rem;
+		font-size: 1.0625rem;
+	}
+
+	.contact-mail a {
+		color: #2d3a4a;
+		text-decoration: none;
+		border-bottom: 1px solid #2d3a4a;
+	}
+
+	.contact-mail a:hover {
+		opacity: 0.8;
+	}
+
+	.contact-back {
+		margin: 0;
+		font-size: 0.9375rem;
+	}
+
+	.contact-back a {
+		color: #6b7280;
+		text-decoration: none;
+	}
+
+	.contact-back a:hover {
+		color: #374151;
+	}
+
+	.site-header {
+		background-color: #ffffff;
+		border-bottom: 1px solid #eee;
+	}
+
+	.site-nav {
+		max-width: 960px;
+		margin: 0 auto;
+		padding: 0.5rem 1.5rem;
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+		gap: 1rem;
+		min-height: 2.5rem;
+	}
+
+	.nav-toggle {
+		display: none;
+		width: 2rem;
+		height: 2rem;
+		min-width: 44px;
+		min-height: 44px;
+		padding: 0;
+		border: none;
+		background: transparent;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		gap: 5px;
+		cursor: pointer;
+		position: relative;
+		z-index: 10;
+	}
+
+	.nav-toggle-bar {
+		display: block;
+		width: 18px;
+		height: 1.5px;
+		background: #000;
+	}
+
+	.nav-list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.125rem 2rem;
+	}
+
+	.nav-list a {
+		color: #000;
+		text-decoration: none;
+		font-weight: 600;
+		font-size: 0.8125rem;
+		padding: 0.25em 0;
+		display: inline-block;
+	}
+
+	.footer {
+		margin-top: auto;
+		background-color: #1e2835;
+		color: #e8ebf0;
+	}
+
+	.footer-inner {
+		max-width: 960px;
+		margin: 0 auto;
+		padding: 2.25rem 1.5rem 2.5rem;
+		display: flex;
+		align-items: flex-end;
+		justify-content: space-between;
+		gap: 1.5rem;
+	}
+
+	.footer-left {
+		text-align: left;
+	}
+
+	.footer-brand {
+		font-size: 1.15rem;
+		font-weight: 600;
+		margin-bottom: 0.25rem;
+	}
+
+	.footer-text {
+		margin: 0 0 0.75rem;
+		font-size: 0.9rem;
+		color: #a8b4c4;
+	}
+
+	.footer-copy {
+		margin: 0;
+		font-size: 0.8rem;
+		color: #8895a8;
+	}
+
+	.footer-contact {
+		font-size: 0.6875rem;
+		letter-spacing: 0.12em;
+		color: #a8b4c4;
+		text-decoration: none;
+		flex-shrink: 0;
+	}
+
+	.footer-contact:hover {
+		color: #e8ebf0;
+	}
+
+	@media (max-width: 768px) {
+		.site-nav {
+			padding: 0.4rem 1.25rem;
+			min-height: 2.25rem;
+		}
+
+		.nav-toggle {
+			display: flex;
+		}
+
+		.nav-list {
+			display: none;
+			position: absolute;
+			top: 100%;
+			left: 0;
+			right: 0;
+			background: #fff;
+			border-bottom: 1px solid #eee;
+			flex-direction: column;
+			gap: 0;
+			padding: 0.5rem 1.25rem 0.75rem;
+			z-index: 5;
+		}
+
+		.site-nav.is-open .nav-list {
+			display: flex !important;
+		}
+
+		.nav-list li {
+			border-bottom: 1px solid #f0f0f0;
+		}
+
+		.nav-list li:last-child {
+			border-bottom: none;
+		}
+
+		.nav-list a {
+			padding: 0.5em 0;
+		}
+
+		.site-header {
+			position: relative;
+		}
+
+		.contact-inner {
+			padding: 3rem 1rem 3rem;
+		}
+	}
+</style>
