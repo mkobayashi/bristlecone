@@ -2,6 +2,8 @@
 import Layout from '../layouts/Layout.astro';
 
 const year = new Date().getFullYear();
+// Formspree のフォームID（https://formspree.io で取得し、ここに設定してください）
+const formspreeEndpoint = 'https://formspree.io/f/YOUR_FORM_ID';
 ---
 
 <Layout>
@@ -47,6 +49,65 @@ const year = new Date().getFullYear();
 			}
 		});
 	</script>
+	<script is:inline define:vars={{ formspreeEndpoint }}>
+		document.addEventListener('DOMContentLoaded', function () {
+			var form = document.getElementById('contact-form');
+			var formView = document.getElementById('contact-form-view');
+			var confirmView = document.getElementById('contact-confirm-view');
+			var successView = document.getElementById('contact-success-view');
+			var backLink = document.getElementById('contact-back-link');
+			var confirmName = document.getElementById('confirm-name');
+			var confirmEmail = document.getElementById('confirm-email');
+			var confirmMessage = document.getElementById('confirm-message');
+			var confirmSubmitBtn = document.getElementById('confirm-submit-btn');
+			var confirmBackBtn = document.getElementById('confirm-back-btn');
+
+			if (!form) return;
+
+			form.addEventListener('submit', function (e) {
+				e.preventDefault();
+				var name = document.getElementById('name').value.trim();
+				var email = document.getElementById('email').value.trim();
+				var message = document.getElementById('message').value.trim();
+				if (!name || !email || !message) return;
+				confirmName.textContent = name;
+				confirmEmail.textContent = email;
+				confirmMessage.textContent = message.replace(/\n/g, '\n');
+				formView.hidden = true;
+				backLink.hidden = true;
+				confirmView.hidden = false;
+			});
+
+			confirmBackBtn.addEventListener('click', function () {
+				confirmView.hidden = true;
+				formView.hidden = false;
+				backLink.hidden = false;
+			});
+
+			confirmSubmitBtn.addEventListener('click', function () {
+				confirmSubmitBtn.disabled = true;
+				confirmSubmitBtn.textContent = '送信中...';
+				var fd = new FormData(form);
+				fetch(formspreeEndpoint, {
+					method: 'POST',
+					body: fd,
+					headers: { Accept: 'application/json' }
+				})
+					.then(function (r) {
+						if (r.ok) {
+							confirmView.hidden = true;
+							successView.hidden = false;
+							backLink.hidden = true;
+						} else throw new Error();
+					})
+					.catch(function () {
+						confirmSubmitBtn.disabled = false;
+						confirmSubmitBtn.textContent = '送信する';
+						alert('送信に失敗しました。しばらくしてから再度お試しください。');
+					});
+			});
+		});
+	</script>
 	<main class="contact-main">
 		<section class="contact-section">
 			<div class="contact-inner">
@@ -54,10 +115,53 @@ const year = new Date().getFullYear();
 				<p class="contact-lead">
 					リフォーム・坪庭・自然エネルギー活用など、ご相談はお気軽にどうぞ。
 				</p>
-				<p class="contact-mail">
-					<a href="mailto:info@bristlecone.jp">info@bristlecone.jp</a>
-				</p>
-				<p class="contact-back">
+
+				<div id="contact-form-view">
+					<form id="contact-form" class="contact-form" action={formspreeEndpoint} method="POST">
+						<input type="text" name="_subject" value="Bristlecone お問い合わせ" hidden />
+						<div class="form-row">
+							<label for="name">お名前</label>
+							<input type="text" id="name" name="name" required placeholder="山田 太郎" />
+						</div>
+						<div class="form-row">
+							<label for="email">メールアドレス</label>
+							<input type="email" id="email" name="_replyto" required placeholder="example@email.com" />
+						</div>
+						<div class="form-row">
+							<label for="message">お問い合わせ内容 <span class="required">*</span></label>
+							<textarea id="message" name="message" rows="6" required placeholder="ご用件をご記入ください"></textarea>
+						</div>
+						<div class="form-actions">
+							<button type="submit" class="btn btn-submit">送信</button>
+						</div>
+					</form>
+				</div>
+
+				<div id="contact-confirm-view" class="contact-confirm" hidden>
+					<h2 class="confirm-title">入力内容の確認</h2>
+					<dl class="confirm-list">
+						<dt>お名前</dt>
+						<dd id="confirm-name"></dd>
+						<dt>メールアドレス</dt>
+						<dd id="confirm-email"></dd>
+						<dt>お問い合わせ内容</dt>
+						<dd id="confirm-message" class="confirm-message"></dd>
+					</dl>
+					<div class="confirm-actions">
+						<button type="button" id="confirm-submit-btn" class="btn btn-submit">送信する</button>
+						<button type="button" id="confirm-back-btn" class="btn btn-back">入力内容を修正する</button>
+					</div>
+				</div>
+
+				<div id="contact-success-view" class="contact-success" hidden>
+					<p class="success-message">送信が完了しました。ありがとうございます。</p>
+					<p class="success-note">ご入力いただいたメールアドレスに、控えメールをお送りしています。</p>
+					<p class="contact-back">
+						<a href="/">← トップへ戻る</a>
+					</p>
+				</div>
+
+				<p class="contact-back" id="contact-back-link">
 					<a href="/">← トップへ戻る</a>
 				</p>
 			</div>
@@ -106,19 +210,145 @@ const year = new Date().getFullYear();
 		color: #374151;
 	}
 
-	.contact-mail {
+	.contact-form {
 		margin: 0 0 2rem;
+	}
+
+	.form-row {
+		margin-bottom: 1.25rem;
+	}
+
+	.form-row label {
+		display: block;
+		font-size: 0.9375rem;
+		font-weight: 600;
+		margin-bottom: 0.35rem;
+		color: #374151;
+	}
+
+	.required {
+		color: #b91c1c;
+	}
+
+	.form-row input,
+	.form-row textarea {
+		width: 100%;
+		max-width: 100%;
+		box-sizing: border-box;
+		padding: 0.5rem 0.75rem;
+		font-size: 1rem;
+		font-family: inherit;
+		border: 1px solid #d1d5db;
+		border-radius: 0.375rem;
+	}
+
+	.form-row textarea {
+		resize: vertical;
+		min-height: 8rem;
+	}
+
+	.form-row input:focus,
+	.form-row textarea:focus {
+		outline: none;
+		border-color: #2d3a4a;
+	}
+
+	.form-actions {
+		margin-top: 1.5rem;
+	}
+
+	.btn {
+		display: inline-block;
+		padding: 0.65rem 1.5rem;
+		font-size: 0.9375rem;
+		font-weight: 600;
+		font-family: inherit;
+		border: none;
+		border-radius: 0.375rem;
+		cursor: pointer;
+	}
+
+	.btn-submit {
+		background: #2d3a4a;
+		color: #fff;
+	}
+
+	.btn-submit:hover:not(:disabled) {
+		background: #232f3d;
+	}
+
+	.btn-submit:disabled {
+		opacity: 0.7;
+		cursor: not-allowed;
+	}
+
+	.btn-back {
+		background: transparent;
+		color: #6b7280;
+		margin-left: 0.75rem;
+	}
+
+	.btn-back:hover {
+		color: #374151;
+	}
+
+	.contact-confirm {
+		margin: 0 0 2rem;
+		padding: 1.5rem 0;
+		border-top: 1px solid #e5e7eb;
+	}
+
+	.confirm-title {
+		font-size: 1.15rem;
+		margin: 0 0 1.25rem;
+	}
+
+	.confirm-list {
+		margin: 0 0 1.5rem;
+		font-size: 0.9375rem;
+	}
+
+	.confirm-list dt {
+		font-weight: 600;
+		color: #6b7280;
+		margin-top: 1rem;
+		margin-bottom: 0.25rem;
+	}
+
+	.confirm-list dt:first-child {
+		margin-top: 0;
+	}
+
+	.confirm-list dd {
+		margin: 0;
+		color: #374151;
+		white-space: pre-wrap;
+		word-break: break-all;
+	}
+
+	.confirm-message {
+		white-space: pre-wrap;
+	}
+
+	.confirm-actions {
+		margin-top: 1.5rem;
+	}
+
+	.contact-success {
+		margin: 0 0 2rem;
+		padding: 1.5rem 0;
+	}
+
+	.success-message {
 		font-size: 1.0625rem;
+		font-weight: 600;
+		margin: 0 0 0.5rem;
 	}
 
-	.contact-mail a {
-		color: #2d3a4a;
-		text-decoration: none;
-		border-bottom: 1px solid #2d3a4a;
-	}
-
-	.contact-mail a:hover {
-		opacity: 0.8;
+	.success-note {
+		font-size: 0.9375rem;
+		color: #6b7280;
+		margin: 0 0 1.5rem;
 	}
 
 	.contact-back {
