@@ -2,8 +2,8 @@
 import Layout from '../layouts/Layout.astro';
 
 const year = new Date().getFullYear();
-// Formspree のフォームID（https://formspree.io で取得し、ここに設定してください）
-const formspreeEndpoint = 'https://formspree.io/f/YOUR_FORM_ID';
+// Resend 用 API（Cloudflare Pages Functions: /api/contact）
+const contactApiUrl = '/api/contact';
 ---
 
 <Layout>
@@ -49,7 +49,7 @@ const formspreeEndpoint = 'https://formspree.io/f/YOUR_FORM_ID';
 			}
 		});
 	</script>
-	<script is:inline define:vars={{ formspreeEndpoint }}>
+	<script is:inline define:vars={{ contactApiUrl }}>
 		document.addEventListener('DOMContentLoaded', function () {
 			var form = document.getElementById('contact-form');
 			var formView = document.getElementById('contact-form-view');
@@ -72,7 +72,7 @@ const formspreeEndpoint = 'https://formspree.io/f/YOUR_FORM_ID';
 				if (!name || !email || !message) return;
 				confirmName.textContent = name;
 				confirmEmail.textContent = email;
-				confirmMessage.textContent = message.replace(/\n/g, '\n');
+				confirmMessage.textContent = message;
 				formView.hidden = true;
 				backLink.hidden = true;
 				confirmView.hidden = false;
@@ -88,17 +88,19 @@ const formspreeEndpoint = 'https://formspree.io/f/YOUR_FORM_ID';
 				confirmSubmitBtn.disabled = true;
 				confirmSubmitBtn.textContent = '送信中...';
 				var fd = new FormData(form);
-				fetch(formspreeEndpoint, {
+				fetch(contactApiUrl, {
 					method: 'POST',
 					body: fd,
 					headers: { Accept: 'application/json' }
 				})
 					.then(function (r) {
-						if (r.ok) {
-							confirmView.hidden = true;
-							successView.hidden = false;
-							backLink.hidden = true;
-						} else throw new Error();
+						return r.json().then(function (data) {
+							if (data && data.ok) {
+								confirmView.hidden = true;
+								successView.hidden = false;
+								backLink.hidden = true;
+							} else throw new Error();
+						});
 					})
 					.catch(function () {
 						confirmSubmitBtn.disabled = false;
@@ -117,7 +119,7 @@ const formspreeEndpoint = 'https://formspree.io/f/YOUR_FORM_ID';
 				</p>
 
 				<div id="contact-form-view">
-					<form id="contact-form" class="contact-form" action={formspreeEndpoint} method="POST">
+					<form id="contact-form" class="contact-form" action="/api/contact" method="POST">
 						<input type="text" name="_subject" value="Bristlecone お問い合わせ" hidden />
 						<div class="form-row">
 							<label for="name">お名前</label>
