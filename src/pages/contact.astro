@@ -1,8 +1,8 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import ContactForm from '../components/ContactForm.astro';
 
 const year = new Date().getFullYear();
-// Resend 用 API（Cloudflare Pages Functions: /api/contact）
 const contactApiUrl = '/api/contact';
 ---
 
@@ -64,12 +64,20 @@ const contactApiUrl = '/api/contact';
 
 			if (!form) return;
 
+			function hasJapanese(text) {
+				return /[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF\u3000-\u303F\uFF00-\uFFEF]/.test(text);
+			}
+
 			form.addEventListener('submit', function (e) {
 				e.preventDefault();
 				var name = document.getElementById('name').value.trim();
 				var email = document.getElementById('email').value.trim();
 				var message = document.getElementById('message').value.trim();
 				if (!name || !email || !message) return;
+				if (!hasJapanese(message)) {
+					alert('お問い合わせ内容には日本語を含めてご記入ください。');
+					return;
+				}
 				confirmName.textContent = name;
 				confirmEmail.textContent = email;
 				confirmMessage.textContent = message;
@@ -99,13 +107,21 @@ const contactApiUrl = '/api/contact';
 								confirmView.hidden = true;
 								successView.hidden = false;
 								backLink.hidden = true;
-							} else throw new Error();
+								return;
+							}
+							var msg = '送信に失敗しました。しばらくしてから再度お試しください。';
+							if (data && data.error === 'message_requires_japanese') {
+								msg = 'お問い合わせ内容には日本語を含めてご記入ください。';
+							} else if (data && data.error === 'turnstile_failed') {
+								msg = '自動確認に失敗しました。ページを再読み込みして、もう一度お試しください。';
+							}
+							throw new Error(msg);
 						});
 					})
-					.catch(function () {
+					.catch(function (err) {
 						confirmSubmitBtn.disabled = false;
 						confirmSubmitBtn.textContent = '送信する';
-						alert('送信に失敗しました。しばらくしてから再度お試しください。');
+						alert(err && err.message ? err.message : '送信に失敗しました。しばらくしてから再度お試しください。');
 					});
 			});
 		});
@@ -119,24 +135,7 @@ const contactApiUrl = '/api/contact';
 				</p>
 
 				<div id="contact-form-view">
-					<form id="contact-form" class="contact-form" action="/api/contact" method="POST">
-						<input type="text" name="_subject" value="Bristlecone お問い合わせ" hidden />
-						<div class="form-row">
-							<label for="name">お名前</label>
-							<input type="text" id="name" name="name" required placeholder="山田 太郎" />
-						</div>
-						<div class="form-row">
-							<label for="email">メールアドレス</label>
-							<input type="email" id="email" name="_replyto" required placeholder="example@email.com" />
-						</div>
-						<div class="form-row">
-							<label for="message">お問い合わせ内容 <span class="required">*</span></label>
-							<textarea id="message" name="message" rows="6" required placeholder="ご用件をご記入ください"></textarea>
-						</div>
-						<div class="form-actions">
-							<button type="submit" class="btn btn-submit">送信</button>
-						</div>
-					</form>
+					<ContactForm />
 				</div>
 
 				<div id="contact-confirm-view" class="contact-confirm" hidden>
@@ -210,53 +209,6 @@ const contactApiUrl = '/api/contact';
 		font-size: 1rem;
 		line-height: 1.9;
 		color: #374151;
-	}
-
-	.contact-form {
-		margin: 0 0 2rem;
-	}
-
-	.form-row {
-		margin-bottom: 1.25rem;
-	}
-
-	.form-row label {
-		display: block;
-		font-size: 0.9375rem;
-		font-weight: 600;
-		margin-bottom: 0.35rem;
-		color: #374151;
-	}
-
-	.required {
-		color: #b91c1c;
-	}
-
-	.form-row input,
-	.form-row textarea {
-		width: 100%;
-		max-width: 100%;
-		box-sizing: border-box;
-		padding: 0.5rem 0.75rem;
-		font-size: 1rem;
-		font-family: inherit;
-		border: 1px solid #d1d5db;
-		border-radius: 0.375rem;
-	}
-
-	.form-row textarea {
-		resize: vertical;
-		min-height: 8rem;
-	}
-
-	.form-row input:focus,
-	.form-row textarea:focus {
-		outline: none;
-		border-color: #2d3a4a;
-	}
-
-	.form-actions {
-		margin-top: 1.5rem;
 	}
 
 	.btn {

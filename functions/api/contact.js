@@ -1,16 +1,37 @@
 /**
- * お問い合わせフォーム送信 API（Resend 使用）
+ * お問い合わせフォーム送信 API（Resend + Turnstile + ハニーポット + 日本語検証）
  *
- * 環境変数（Cloudflare Pages の Variables and Secrets）:
- * - RESEND_API_KEY: Resend の API キー
- * - CONTACT_FROM: 送信元メール（例: Bristlecone <info@bristlecone.jp>）
- * - CONTACT_TO: 届け先メール（例: info@bristlecone.jp）
+ * 環境変数（Cloudflare Pages）:
+ * - RESEND_API_KEY (Secret)
+ * - TURNSTILE_SECRET_KEY (Secret)
+ * - CONTACT_FROM, CONTACT_TO (Variable)
  */
+
+const JAPANESE_REGEX = /[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF\u3000-\u303F\uFF00-\uFFEF]/;
+
+function hasJapaneseInMessage(text) {
+	if (!text || typeof text !== 'string') return false;
+	return JAPANESE_REGEX.test(text);
+}
+
+async function verifyTurnstile(secret, token, remoteip) {
+	if (!secret || !token) return false;
+	const body = new URLSearchParams();
+	body.set('secret', secret);
+	body.set('response', token);
+	if (remoteip) body.set('remoteip', remoteip);
+	const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+		body: body.toString(),
+	});
+	const data = await res.json();
+	return data.success === true;
+}
 
 export async function onRequestPost(context) {
 	const { request, env } = context;
 
-	// CORS: 同一オリジンなら不要だが、必要に応じて
 	const headers = {
 		'Content-Type': 'application/json',
 		'Access-Control-Allow-Origin': '*',
@@ -18,6 +39,7 @@ export async function onRequestPost(context) {
 
 	try {
 		const apiKey = env.RESEND_API_KEY;
+		const turnstileSecret = env.TURNSTILE_SECRET_KEY;
 		const fromEmail = env.CONTACT_FROM || 'Bristlecone <info@bristlecone.jp>';
 		const toEmail = env.CONTACT_TO || 'info@bristlecone.jp';
 
@@ -29,13 +51,48 @@ export async function onRequestPost(context) {
 		}
 
 		const formData = await request.formData();
-		const name = formData.get('name') || '';
-		const email = formData.get('_replyto') || formData.get('email') || '';
-		const message = formData.get('message') || '';
 
-		if (!name.trim() || !email.trim() || !message.trim()) {
+		// ハニーポット: 値が入っていれば bot とみなしてブロック（成功レスポンスは返さず 400）
+		const honeypot = formData.get('website');
+		if (honeypot != null && String(honeypot).trim() !== '') {
+			return new Response(
+				JSON.stringify({ ok: false, error: 'invalid' }),
+				{ status: 400, headers }
+			);
+		}
+
+		const name = String(formData.get('name') || '').trim();
+		const email = String(formData.get('_replyto') || formData.get('email') || '').trim();
+		const message = String(formData.get('message') || '').trim();
+		const turnstileToken = formData.get('cf-turnstile-response') || '';
+
+		if (!name || !email || !message) {
 			return new Response(
 				JSON.stringify({ ok: false, error: 'Missing required fields' }),
+				{ status: 400, headers }
+			);
+		}
+
+		// メッセージに日本語が含まれない場合はブロック
+		if (!hasJapaneseInMessage(message)) {
+			return new Response(
+				JSON.stringify({ ok: false, error: 'message_requires_japanese' }),
+				{ status: 400, headers }
+			);
+		}
+
+		// Turnstile 検証
+		if (!turnstileSecret) {
+			return new Response(
+				JSON.stringify({ ok: false, error: 'turnstile_not_configured' }),
+				{ status: 500, headers }
+			);
+		}
+		const cfConnectingIp = request.headers.get('CF-Connecting-IP') || '';
+		const okTurnstile = await verifyTurnstile(turnstileSecret, String(turnstileToken), cfConnectingIp);
+		if (!okTurnstile) {
+			return new Response(
+				JSON.stringify({ ok: false, error: 'turnstile_failed' }),
 				{ status: 400, headers }
 			);
 		}
@@ -43,7 +100,6 @@ export async function onRequestPost(context) {
 		const resendUrl = 'https://api.resend.com/emails';
 		const authHeader = { Authorization: `Bearer ${apiKey}` };
 
-		// 1. あなた（業務用）に届くメール
 		const ownerBody = {
 			from: fromEmail,
 			to: [toEmail],
@@ -75,7 +131,6 @@ export async function onRequestPost(context) {
 			);
 		}
 
-		// 2. 送信者への控えメール（同時返信）
 		const replyBody = {
 			from: fromEmail,
 			to: [email],
@@ -103,7 +158,6 @@ export async function onRequestPost(context) {
 		if (!resReply.ok) {
 			const err = await resReply.text();
 			console.error('Resend reply email failed:', err);
-			// 届け先には送れているので 200 を返してもよい
 		}
 
 		return new Response(JSON.stringify({ ok: true }), {
